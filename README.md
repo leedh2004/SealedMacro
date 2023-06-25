@@ -1,5 +1,5 @@
 # SealedMacro
-✨ Swift Macro, Parsing Sealed Class on Server (ex. kotlin server's sealed class json)
+✨ Swift Macro, Parsing Sealed Class JSON Model. (ex. kotlin server's sealed class json)
 
 ## At a Glance
 
