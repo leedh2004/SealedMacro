@@ -17,16 +17,23 @@ extension String {
         return self.words.map({ $0.capitalized }).joined()
     }
 
+    private func snakeCased() -> String {
+        let pattern = "([a-z0-9])([A-Z])"
+        let regex = try! NSRegularExpression(pattern: pattern, options: [])
+        let range = NSRange(location: 0, length: self.count)
+        return regex.stringByReplacingMatches(in: self, options: [], range: range, withTemplate: "$1_$2").lowercased()
+    }
+
     func lowerSnakeCased() -> String {
-        return self.words.map({ $0.lowercased() }).joined(separator: "_")
+        return self.snakeCased().lowercased()
     }
 
     func upperSnakeCased() -> String {
-        return self.words.map({ $0.uppercased() }).joined(separator: "_")
+        return self.snakeCased().uppercased()
     }
 
     func mixedSnakeCased() -> String {
-        return self.words.joined(separator: "_")
+        return self.snakeCased()
     }
 
     func lowerKebabCased() -> String {
