@@ -59,7 +59,7 @@ import PackageDescription
 let package = Package(
   name: "MyAwesomeApp",
   dependencies: [
-    .package(url: "https://github.com/leedh2004/SealedMacro.git", from: "0.1.1")
+    .package(url: "https://github.com/leedh2004/SealedMacro.git", from: "0.1.2")
   ]
 )
 ```
