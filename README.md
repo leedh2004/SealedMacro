@@ -6,20 +6,20 @@
 Server's Sealed Class JSON Response
 ```json
 {
-  "type": "IMAGE",
+  "_type": "IMAGE",
   "imageURL": "https://github.com/images",
   "imageName": "source"
 }
 ```
 ```json
 {
-  "type": "LOTTIE",
+  "_type": "LOTTIE",
   "lottieURL": "https://github.com/lotties"
 }
 ```
 ```json
 {
-  "type": "ICON_TYPE",
+  "_type": "ICON_TYPE",
   "iconURL": "https://github.com/icons"
 }
 ```
@@ -27,7 +27,7 @@ Server's Sealed Class JSON Response
 This is can parse with this Swift Model:
 
 ```swift
-@Sealed(typeParseRule: .upperSnakeCase)
+@Sealed(typeKey: "_type", typeParseRule: .upperSnakeCase)
 enum ImageSource {
     case image(Image)
     case lottie(Lottie)
