@@ -1,7 +1,7 @@
 @attached(member, names: named(init))
 @attached(peer, names: arbitrary)
 @attached(conformance)
-public macro Sealed(typeParseRule: TypeParseRule) = #externalMacro(module: "SealedMacros", type: "SealedMacro")
+public macro Sealed(typeKey: String = "type", typeParseRule: TypeParseRule) = #externalMacro(module: "SealedMacros", type: "SealedMacro")
 
 public enum TypeParseRule {
     case upperCase

@@ -15,6 +15,13 @@ extension SealedMacro: MemberMacro {
         guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
             throw SealedMacro.Error.shouldBeEnum
         }
+        guard let arguments = node.argument?.as(TupleExprElementListSyntax.self) else {
+            throw SealedMacro.Error.invalidArgument
+        }
+
+        let typeKey = arguments.first(where: { $0.label?.text == "typeKey" })?
+            .expression.as(StringLiteralExprSyntax.self)?
+            .segments.first?.description ?? "type"
 
         let allCaseNames = enumDecl.allCaseIdentifiers.map(\.text)
         let allCaseAssociatedTypes = enumDecl.allCaseAssociatedType.map(\.description)
@@ -27,7 +34,7 @@ extension SealedMacro: MemberMacro {
         let declSyntax: DeclSyntax = """
         \(raw: enumDecl.accessLevel.initalizerModifier) init(from decoder: Decoder) throws {
             let typeContainer = try decoder.container(keyedBy: \(raw: enumDecl.identifier.text)TypeCodingKey.self)
-            let type = try typeContainer.decode(\(raw: enumDecl.identifier.text)Type.self, forKey: .type)
+            let type = try typeContainer.decode(\(raw: enumDecl.identifier.text)Type.self, forKey: .\(raw: typeKey))
             let container = try decoder.singleValueContainer()
             switch type {
             \(raw: cases.map { "case .\($0.0):\n        self = .\($0.0)(try container.decode(\($0.1).self))" }.joined(separator: "\n    "))
@@ -50,20 +57,24 @@ extension SealedMacro: PeerMacro {
         guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
             throw SealedMacro.Error.shouldBeEnum
         }
-        guard let argument = node.argument?.as(TupleExprElementListSyntax.self)?.first else {
+        guard let arguments = node.argument?.as(TupleExprElementListSyntax.self),
+              let typeParseRule = arguments.first(where: { $0.label?.text == "typeParseRule" }).map(\.expression.description) else {
             throw SealedMacro.Error.invalidArgument
         }
+        let typeKey = arguments.first(where: { $0.label?.text == "typeKey" })?
+            .expression.as(StringLiteralExprSyntax.self)?
+            .segments.first?.description ?? "type"
 
         let declTypeSyntax: DeclSyntax = """
         private enum \(raw: enumDecl.identifier.text)TypeCodingKey: String, CodingKey {
-            case type
+            case \(raw: typeKey)
         }
         """
 
         let allCaseNames = enumDecl.allCaseIdentifiers.map(\.text)
         let allCasesParsingKey: [String]
 
-        guard let typeRule = TypeParseRule(rawValue: argument.expression.description) else {
+        guard let typeRule = TypeParseRule(rawValue: typeParseRule) else {
             throw SealedMacro.Error.invalidArgument
         }
 

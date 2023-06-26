@@ -10,7 +10,7 @@ private let testMacros: [String: Macro.Type] = [
 final class SealedGeneratorTests: XCTestCase {
     func testSealedMacros_UpperCase() {
         let source = """
-        @Sealed(types: .upperCase)
+        @Sealed(typeKey: "kind", typeParseRule: .upperCase)
         public enum ImageSource {
             case image(Image)
             case lottie(Lottie)
@@ -24,7 +24,7 @@ final class SealedGeneratorTests: XCTestCase {
             case icon(Icon)
             public init(from decoder: Decoder) throws {
                 let typeContainer = try decoder.container(keyedBy: ImageSourceTypeCodingKey.self)
-                let type = try typeContainer.decode(ImageSourceType.self, forKey: .type)
+                let type = try typeContainer.decode(ImageSourceType.self, forKey: .kind)
                 let container = try decoder.singleValueContainer()
                 switch type {
                 case .image:
@@ -37,7 +37,7 @@ final class SealedGeneratorTests: XCTestCase {
             }
         }
         private enum ImageSourceTypeCodingKey: String, CodingKey {
-            case type
+            case kind
         }
         private enum ImageSourceType: String, CodingKey, Codable {
             case image = "IMAGE"
@@ -52,7 +52,7 @@ final class SealedGeneratorTests: XCTestCase {
 
     func testSealedMacros_LowerCase() {
         let source = """
-        @Sealed(types: .lowerCase)
+        @Sealed(typeParseRule: .lowerCase)
         enum ImageSource {
             case image(Image)
             case lottie(Lottie)
@@ -94,7 +94,7 @@ final class SealedGeneratorTests: XCTestCase {
 
     func testSealedMacros_FailCase() {
         let source = """
-        @Sealed(types: .lowerCase)
+        @Sealed(typeParseRule: .lowerCase)
         enum ImageSource {
             case image(Image)
             case lottie(Lottie)
