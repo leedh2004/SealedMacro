@@ -48,6 +48,24 @@ extension ImageSource {
     var iconURL: String
   }
 }
+
+// MARK: Test Decode & Encode 
+func testSealedDecoingAndEncoding() {
+  let json = """
+  {
+    "_type": "ICON_TYPE",
+    "iconURL": "https://github.com/icons"
+  }
+  """
+  let jsonData = Data(json.utf8)
+  let imageSource = try? decoder.decode(ImageSource.self, from: jsonData)
+  XCTAssertTrue(imageSource != nil)  
+  let encodedData = try? encoder.encode(imageSource)
+  XCTAssertTrue(encodedData != nil)
+  let reDecodedImageSource = try? decoder.decode(ImageSource.self, from: encodedData!)  
+  XCTAssertTrue(reDecodedImageSource != nil)
+}
+
 ```
 ## Installation
 
