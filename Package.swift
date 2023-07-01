@@ -45,6 +45,7 @@ let package = Package(
             name: "SealedTests",
             dependencies: [
                 "SealedMacros",
+                "Sealed",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]
         ),
