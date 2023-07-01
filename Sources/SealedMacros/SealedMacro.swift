@@ -31,7 +31,8 @@ extension SealedMacro: MemberMacro {
         }
 
         let cases = zip(allCaseNames, allCaseAssociatedTypes)
-        let declSyntax: DeclSyntax = """
+
+        let decodeSyntax: DeclSyntax = """
         \(raw: enumDecl.accessLevel.initalizerModifier) init(from decoder: Decoder) throws {
             let typeContainer = try decoder.container(keyedBy: \(raw: enumDecl.identifier.text)TypeCodingKey.self)
             let type = try typeContainer.decode(\(raw: enumDecl.identifier.text)Type.self, forKey: .\(raw: typeKey))
@@ -42,8 +43,22 @@ extension SealedMacro: MemberMacro {
         }
         """
 
+        let encodeSyntax: DeclSyntax = """
+            \(raw: enumDecl.accessLevel.initalizerModifier) func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                switch self {
+                \(raw: cases.map(\.0).map { "case .\($0)(let \($0)): try container.encode(\($0))" }.joined(separator: "\n        "))
+                }
+                var typeContainer = encoder.container(keyedBy: \(raw: enumDecl.identifier.text)TypeCodingKey.self)
+                switch self {
+                \(raw: cases.map { "case .\($0.0): try typeContainer.encode(\(enumDecl.identifier.text)Type.\($0.0), forKey: .\(typeKey))" }.joined(separator: "\n        "))
+                }
+            }
+        """
+
         return [
-            declSyntax
+            decodeSyntax,
+            encodeSyntax
         ]
     }
 }

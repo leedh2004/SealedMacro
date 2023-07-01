@@ -1,4 +1,4 @@
-@attached(member, names: named(init))
+@attached(member, names: named(init), named(encode))
 @attached(peer, names: arbitrary)
 @attached(conformance)
 public macro Sealed(typeKey: String = "type", typeParseRule: TypeParseRule) = #externalMacro(module: "SealedMacros", type: "SealedMacro")

@@ -35,6 +35,26 @@ final class SealedGeneratorTests: XCTestCase {
                     self = .icon(try container.decode(Icon.self))
                 }
             }
+            public func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                switch self {
+                case .image(let image):
+                    try container.encode(image)
+                case .lottie(let lottie):
+                    try container.encode(lottie)
+                case .icon(let icon):
+                    try container.encode(icon)
+                }
+                var typeContainer = encoder.container(keyedBy: ImageSourceTypeCodingKey.self)
+                switch self {
+                case .image:
+                    try typeContainer.encode(ImageSourceType.image, forKey: .kind)
+                case .lottie:
+                    try typeContainer.encode(ImageSourceType.lottie, forKey: .kind)
+                case .icon:
+                    try typeContainer.encode(ImageSourceType.icon, forKey: .kind)
+                }
+            }
         }
         private enum ImageSourceTypeCodingKey: String, CodingKey {
             case kind
@@ -75,6 +95,26 @@ final class SealedGeneratorTests: XCTestCase {
                     self = .lottie(try container.decode(Lottie.self))
                 case .icon:
                     self = .icon(try container.decode(Icon.self))
+                }
+            }
+            internal func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                switch self {
+                case .image(let image):
+                    try container.encode(image)
+                case .lottie(let lottie):
+                    try container.encode(lottie)
+                case .icon(let icon):
+                    try container.encode(icon)
+                }
+                var typeContainer = encoder.container(keyedBy: ImageSourceTypeCodingKey.self)
+                switch self {
+                case .image:
+                    try typeContainer.encode(ImageSourceType.image, forKey: .type)
+                case .lottie:
+                    try typeContainer.encode(ImageSourceType.lottie, forKey: .type)
+                case .icon:
+                    try typeContainer.encode(ImageSourceType.icon, forKey: .type)
                 }
             }
         }

@@ -40,6 +40,7 @@ final class ParsingTests: XCTestCase {
         """
         let jsonData = Data(json.utf8)
         let imageSource = try? decoder.decode(ImageSource.self, from: jsonData)
+        XCTAssertTrue(imageSource != nil)
     }
 }
 
