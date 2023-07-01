@@ -3,7 +3,7 @@
 
 ## At a Glance
 
-Server's Sealed Class JSON Response
+### JSON Response
 ```json
 {
   "_type": "IMAGE",
@@ -24,7 +24,7 @@ Server's Sealed Class JSON Response
 }
 ```
 
-This is can parse with this Swift Model:
+### Sealed Swift Model
 
 ```swift
 @Sealed(typeKey: "_type", typeParseRule: .upperSnakeCase)
@@ -48,7 +48,11 @@ extension ImageSource {
     var iconURL: String
   }
 }
+```
 
+### Decoding & Encoding logic is automatically implemented.
+
+```swift
 // MARK: Test Decode & Encode 
 func testSealedDecoingAndEncoding() {
   let json = """
@@ -65,7 +69,6 @@ func testSealedDecoingAndEncoding() {
   let reDecodedImageSource = try? decoder.decode(ImageSource.self, from: encodedData!)  
   XCTAssertTrue(reDecodedImageSource != nil)
 }
-
 ```
 ## Installation
 
@@ -77,7 +80,7 @@ import PackageDescription
 let package = Package(
   name: "MyAwesomeApp",
   dependencies: [
-    .package(url: "https://github.com/leedh2004/SealedMacro.git", from: "0.1.2")
+    .package(url: "https://github.com/leedh2004/SealedMacro.git", from: "0.2.0")
   ]
 )
 ```
