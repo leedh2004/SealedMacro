@@ -15,7 +15,7 @@ extension SealedMacro: MemberMacro {
         guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
             throw SealedMacro.Error.shouldBeEnum
         }
-        guard let arguments = node.argument?.as(TupleExprElementListSyntax.self) else {
+        guard let arguments = node.arguments?.as(LabeledExprListSyntax.self) else {
             throw SealedMacro.Error.invalidArgument
         }
 
@@ -34,8 +34,8 @@ extension SealedMacro: MemberMacro {
 
         let decodeSyntax: DeclSyntax = """
         \(raw: enumDecl.accessLevel.initalizerModifier) init(from decoder: Decoder) throws {
-            let typeContainer = try decoder.container(keyedBy: \(raw: enumDecl.identifier.text)TypeCodingKey.self)
-            let type = try typeContainer.decode(\(raw: enumDecl.identifier.text)Type.self, forKey: .\(raw: typeKey))
+            let typeContainer = try decoder.container(keyedBy: \(raw: enumDecl.name.text)TypeCodingKey.self)
+            let type = try typeContainer.decode(\(raw: enumDecl.name.text)Type.self, forKey: .\(raw: typeKey))
             let container = try decoder.singleValueContainer()
             switch type {
             \(raw: cases.map { "case .\($0.0):\n        self = .\($0.0)(try container.decode(\($0.1).self))" }.joined(separator: "\n    "))
@@ -49,30 +49,29 @@ extension SealedMacro: MemberMacro {
                 switch self {
                 \(raw: cases.map(\.0).map { "case .\($0)(let \($0)): try container.encode(\($0))" }.joined(separator: "\n        "))
                 }
-                var typeContainer = encoder.container(keyedBy: \(raw: enumDecl.identifier.text)TypeCodingKey.self)
+                var typeContainer = encoder.container(keyedBy: \(raw: enumDecl.name.text)TypeCodingKey.self)
                 switch self {
-                \(raw: cases.map { "case .\($0.0): try typeContainer.encode(\(enumDecl.identifier.text)Type.\($0.0), forKey: .\(typeKey))" }.joined(separator: "\n        "))
+                \(raw: cases.map { "case .\($0.0): try typeContainer.encode(\(enumDecl.name.text)Type.\($0.0), forKey: .\(typeKey))" }.joined(separator: "\n        "))
                 }
             }
         """
 
+        let typeSyntaxes: [DeclSyntax] = (try? typeSyntax(of: node, providingPeersOf: declaration)) ?? []
+
         return [
             decodeSyntax,
             encodeSyntax
-        ]
+        ] + typeSyntaxes
     }
-}
 
-extension SealedMacro: PeerMacro {
-    public static func expansion(
+    private static func typeSyntax(
         of node: AttributeSyntax,
-        providingPeersOf declaration: some DeclSyntaxProtocol,
-        in context: some MacroExpansionContext
+        providingPeersOf declaration: some DeclGroupSyntax
     ) throws -> [DeclSyntax] {
         guard let enumDecl = declaration.as(EnumDeclSyntax.self) else {
             throw SealedMacro.Error.shouldBeEnum
         }
-        guard let arguments = node.argument?.as(TupleExprElementListSyntax.self),
+        guard let arguments = node.arguments?.as(LabeledExprListSyntax.self),
               let typeParseRule = arguments.first(where: { $0.label?.text == "typeParseRule" }).map(\.expression.description) else {
             throw SealedMacro.Error.invalidArgument
         }
@@ -81,7 +80,7 @@ extension SealedMacro: PeerMacro {
             .segments.first?.description ?? "type"
 
         let declTypeSyntax: DeclSyntax = """
-        private enum \(raw: enumDecl.identifier.text)TypeCodingKey: String, CodingKey {
+        private enum \(raw: enumDecl.name.text)TypeCodingKey: String, CodingKey {
             case \(raw: typeKey)
         }
         """
@@ -120,7 +119,7 @@ extension SealedMacro: PeerMacro {
 
         let cases = zip(allCaseNames, allCasesParsingKey)
         let parseTypeSyntax: DeclSyntax = """
-        private enum \(raw: enumDecl.identifier.text)Type: String, CodingKey, Codable {
+        private enum \(raw: enumDecl.name.text)Type: String, CodingKey, Codable {
             \(raw: cases.map { "case \($0.0) = \"\($0.1)\"" }.joined(separator: "\n    "))
         }
         """
@@ -129,15 +128,5 @@ extension SealedMacro: PeerMacro {
             declTypeSyntax,
             parseTypeSyntax
         ]
-    }
-}
-
-extension SealedMacro: ConformanceMacro {
-    public static func expansion(
-        of node: AttributeSyntax,
-        providingConformancesOf declaration: some DeclGroupSyntax,
-        in context: some MacroExpansionContext
-    ) throws -> [(TypeSyntax, GenericWhereClauseSyntax?)] {
-        return [("Codable", nil)]
     }
 }

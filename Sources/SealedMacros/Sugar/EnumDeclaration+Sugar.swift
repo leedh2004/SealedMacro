@@ -12,21 +12,21 @@ extension EnumDeclSyntax {
     }
 
     var allCaseIdentifiers: [TokenSyntax] {
-        allCaseElements.map(\.identifier)
+        allCaseElements.map(\.name)
     }
 
     var allCaseAssociatedType: [TypeSyntax] {
-        allCaseElements.compactMap(\.associatedValue?.type)
+        allCaseElements.compactMap(\.parameterClause?.type)
     }
 
     var accessLevel: AccessLevel {
-        modifiers?.lazy.compactMap({ AccessLevel(rawValue: $0.name.text) }).first ?? .internal
+        modifiers.lazy.compactMap({ AccessLevel(rawValue: $0.name.text) }).first ?? .internal
     }
 
 }
 
 extension EnumCaseParameterClauseSyntax {
     var type: TypeSyntax? {
-        self.parameterList.compactMap { $0.as(EnumCaseParameterSyntax.self) }.first?.type
+        self.parameters.compactMap { $0.as(EnumCaseParameterSyntax.self) }.first?.type
     }
 }

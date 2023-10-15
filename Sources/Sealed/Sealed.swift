@@ -1,6 +1,5 @@
-@attached(member, names: named(init), named(encode))
-@attached(peer, names: arbitrary)
-@attached(conformance)
+@attached(member, names: named(init), named(encode), named(ImageSourceTypeCodingKey), named(ImageSourceType))
+@attached(extension)
 public macro Sealed(typeKey: String = "type", typeParseRule: TypeParseRule) = #externalMacro(module: "SealedMacros", type: "SealedMacro")
 
 public enum TypeParseRule {

@@ -45,7 +45,7 @@ final class ParsingTests: XCTestCase {
 }
 
 @Sealed(typeParseRule: .upperSnakeCase)
-private enum ImageSource {
+private enum ImageSource: Codable {
     case image(Image), lottie(Lottie), iconType(Icon)
 }
 

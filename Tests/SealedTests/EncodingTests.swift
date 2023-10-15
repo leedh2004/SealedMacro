@@ -33,7 +33,7 @@ final class EncodingTests: XCTestCase {
 }
 
 @Sealed(typeParseRule: .upperCase)
-private enum ImageSource {
+private enum ImageSource: Codable {
     case image(Image)
     case lottie(Lottie)
     case icon(Icon)
