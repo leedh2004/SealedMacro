@@ -28,7 +28,7 @@
 
 ```swift
 @Sealed(typeKey: "_type", typeParseRule: .upperSnakeCase)
-enum ImageSource {
+enum ImageSource: Codable {
     case image(Image)
     case lottie(Lottie)
     case iconType(Icon)
@@ -80,7 +80,7 @@ import PackageDescription
 let package = Package(
   name: "MyAwesomeApp",
   dependencies: [
-    .package(url: "https://github.com/leedh2004/SealedMacro.git", from: "0.2.0")
+    .package(url: "https://github.com/leedh2004/SealedMacro.git", from: "0.3.0")
   ]
 )
 ```
