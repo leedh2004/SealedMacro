@@ -30,12 +30,13 @@ extension SealedMacro: MemberMacro {
             throw SealedMacro.Error.shouldAllCaseHasAssociatedType
         }
 
-        let cases = zip(allCaseNames, allCaseAssociatedTypes)
+        let cases: Zip2Sequence<[String], [String]> = zip(allCaseNames, allCaseAssociatedTypes)
 
-        let decodeSyntax: DeclSyntax = """
+        let decodeSyntax: DeclSyntax = 
+        """
         \(raw: enumDecl.accessLevel.initalizerModifier) init(from decoder: Decoder) throws {
-            let typeContainer = try decoder.container(keyedBy: \(raw: enumDecl.name.text)TypeCodingKey.self)
-            let type = try typeContainer.decode(\(raw: enumDecl.name.text)Type.self, forKey: .\(raw: typeKey))
+            let typeContainer = try decoder.container(keyedBy: TypeCodingKey.self)
+            let type = try typeContainer.decode(ParseCodingKey.self, forKey: .\(raw: typeKey))
             let container = try decoder.singleValueContainer()
             switch type {
             \(raw: cases.map { "case .\($0.0):\n        self = .\($0.0)(try container.decode(\($0.1).self))" }.joined(separator: "\n    "))
@@ -43,28 +44,29 @@ extension SealedMacro: MemberMacro {
         }
         """
 
-        let encodeSyntax: DeclSyntax = """
-            \(raw: enumDecl.accessLevel.initalizerModifier) func encode(to encoder: Encoder) throws {
-                var container = encoder.singleValueContainer()
-                switch self {
-                \(raw: cases.map(\.0).map { "case .\($0)(let \($0)): try container.encode(\($0))" }.joined(separator: "\n        "))
-                }
-                var typeContainer = encoder.container(keyedBy: \(raw: enumDecl.name.text)TypeCodingKey.self)
-                switch self {
-                \(raw: cases.map { "case .\($0.0): try typeContainer.encode(\(enumDecl.name.text)Type.\($0.0), forKey: .\(typeKey))" }.joined(separator: "\n        "))
-                }
+        let encodeSyntax: DeclSyntax = 
+        """
+        \(raw: enumDecl.accessLevel.initalizerModifier) func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            switch self {
+            \(raw: cases.map(\.0).map { "case .\($0)(let \($0)): try container.encode(\($0))" }.joined(separator: "\n    "))
             }
+            var typeContainer = encoder.container(keyedBy: TypeCodingKey.self)
+            switch self {
+            \(raw: cases.map { "case .\($0.0): try typeContainer.encode(ParseCodingKey.\($0.0), forKey: .\(typeKey))" }.joined(separator: "\n    "))
+            }
+        }
         """
 
-        let typeSyntaxes: [DeclSyntax] = (try? typeSyntax(of: node, providingPeersOf: declaration)) ?? []
+        let codingKeySyntaxes: [DeclSyntax] = (try? codingKeySyntaxes(of: node, providingPeersOf: declaration)) ?? []
 
         return [
             decodeSyntax,
             encodeSyntax
-        ] + typeSyntaxes
+        ] + codingKeySyntaxes
     }
 
-    private static func typeSyntax(
+    private static func codingKeySyntaxes(
         of node: AttributeSyntax,
         providingPeersOf declaration: some DeclGroupSyntax
     ) throws -> [DeclSyntax] {
@@ -80,7 +82,7 @@ extension SealedMacro: MemberMacro {
             .segments.first?.description ?? "type"
 
         let declTypeSyntax: DeclSyntax = """
-        private enum \(raw: enumDecl.name.text)TypeCodingKey: String, CodingKey {
+        private enum TypeCodingKey: String, CodingKey {
             case \(raw: typeKey)
         }
         """
@@ -119,7 +121,7 @@ extension SealedMacro: MemberMacro {
 
         let cases = zip(allCaseNames, allCasesParsingKey)
         let parseTypeSyntax: DeclSyntax = """
-        private enum \(raw: enumDecl.name.text)Type: String, CodingKey, Codable {
+        private enum ParseCodingKey: String, CodingKey, Codable {
             \(raw: cases.map { "case \($0.0) = \"\($0.1)\"" }.joined(separator: "\n    "))
         }
         """

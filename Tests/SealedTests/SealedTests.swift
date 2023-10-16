@@ -9,22 +9,25 @@ private let testMacros: [String: Macro.Type] = [
 
 final class SealedGeneratorTests: XCTestCase {
     func testSealedMacros_UpperCase() {
-        let source = """
+        let source = 
+        """
         @Sealed(typeKey: "kind", typeParseRule: .upperCase)
-        public enum ImageSource {
+        public enum ImageSource: Codable {
             case image(Image)
             case lottie(Lottie)
             case icon(Icon)
         }
         """
-        let expected = """
-        public enum ImageSource {
+        let expected = 
+        """
+        public enum ImageSource: Codable {
             case image(Image)
             case lottie(Lottie)
             case icon(Icon)
+
             public init(from decoder: Decoder) throws {
-                let typeContainer = try decoder.container(keyedBy: ImageSourceTypeCodingKey.self)
-                let type = try typeContainer.decode(ImageSourceType.self, forKey: .kind)
+                let typeContainer = try decoder.container(keyedBy: TypeCodingKey.self)
+                let type = try typeContainer.decode(ParseCodingKey.self, forKey: .kind)
                 let container = try decoder.singleValueContainer()
                 switch type {
                 case .image:
@@ -35,6 +38,7 @@ final class SealedGeneratorTests: XCTestCase {
                     self = .icon(try container.decode(Icon.self))
                 }
             }
+
             public func encode(to encoder: Encoder) throws {
                 var container = encoder.singleValueContainer()
                 switch self {
@@ -45,48 +49,50 @@ final class SealedGeneratorTests: XCTestCase {
                 case .icon(let icon):
                     try container.encode(icon)
                 }
-                var typeContainer = encoder.container(keyedBy: ImageSourceTypeCodingKey.self)
+                var typeContainer = encoder.container(keyedBy: TypeCodingKey.self)
                 switch self {
                 case .image:
-                    try typeContainer.encode(ImageSourceType.image, forKey: .kind)
+                    try typeContainer.encode(ParseCodingKey.image, forKey: .kind)
                 case .lottie:
-                    try typeContainer.encode(ImageSourceType.lottie, forKey: .kind)
+                    try typeContainer.encode(ParseCodingKey.lottie, forKey: .kind)
                 case .icon:
-                    try typeContainer.encode(ImageSourceType.icon, forKey: .kind)
+                    try typeContainer.encode(ParseCodingKey.icon, forKey: .kind)
                 }
             }
-        }
-        private enum ImageSourceTypeCodingKey: String, CodingKey {
-            case kind
-        }
-        private enum ImageSourceType: String, CodingKey, Codable {
-            case image = "IMAGE"
-            case lottie = "LOTTIE"
-            case icon = "ICON"
-        }
-        extension ImageSource: Codable {
+
+            private enum TypeCodingKey: String, CodingKey {
+                case kind
+            }
+
+            private enum ParseCodingKey: String, CodingKey, Codable {
+                case image = "IMAGE"
+                case lottie = "LOTTIE"
+                case icon = "ICON"
+            }
         }
         """
         assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
     }
 
     func testSealedMacros_LowerCase() {
-        let source = """
+        let source = 
+        """
         @Sealed(typeParseRule: .lowerCase)
-        enum ImageSource {
+        enum ImageSource: Codable {
             case image(Image)
             case lottie(Lottie)
             case icon(Icon)
         }
         """
         let expected = """
-        enum ImageSource {
+        enum ImageSource: Codable {
             case image(Image)
             case lottie(Lottie)
             case icon(Icon)
+
             internal init(from decoder: Decoder) throws {
-                let typeContainer = try decoder.container(keyedBy: ImageSourceTypeCodingKey.self)
-                let type = try typeContainer.decode(ImageSourceType.self, forKey: .type)
+                let typeContainer = try decoder.container(keyedBy: TypeCodingKey.self)
+                let type = try typeContainer.decode(ParseCodingKey.self, forKey: .type)
                 let container = try decoder.singleValueContainer()
                 switch type {
                 case .image:
@@ -97,6 +103,7 @@ final class SealedGeneratorTests: XCTestCase {
                     self = .icon(try container.decode(Icon.self))
                 }
             }
+
             internal func encode(to encoder: Encoder) throws {
                 var container = encoder.singleValueContainer()
                 switch self {
@@ -107,26 +114,26 @@ final class SealedGeneratorTests: XCTestCase {
                 case .icon(let icon):
                     try container.encode(icon)
                 }
-                var typeContainer = encoder.container(keyedBy: ImageSourceTypeCodingKey.self)
+                var typeContainer = encoder.container(keyedBy: TypeCodingKey.self)
                 switch self {
                 case .image:
-                    try typeContainer.encode(ImageSourceType.image, forKey: .type)
+                    try typeContainer.encode(ParseCodingKey.image, forKey: .type)
                 case .lottie:
-                    try typeContainer.encode(ImageSourceType.lottie, forKey: .type)
+                    try typeContainer.encode(ParseCodingKey.lottie, forKey: .type)
                 case .icon:
-                    try typeContainer.encode(ImageSourceType.icon, forKey: .type)
+                    try typeContainer.encode(ParseCodingKey.icon, forKey: .type)
                 }
             }
-        }
-        private enum ImageSourceTypeCodingKey: String, CodingKey {
-            case type
-        }
-        private enum ImageSourceType: String, CodingKey, Codable {
-            case image = "image"
-            case lottie = "lottie"
-            case icon = "icon"
-        }
-        extension ImageSource: Codable {
+
+            private enum TypeCodingKey: String, CodingKey {
+                case type
+            }
+
+            private enum ParseCodingKey: String, CodingKey, Codable {
+                case image = "image"
+                case lottie = "lottie"
+                case icon = "icon"
+            }
         }
         """
         assertMacroExpansion(source, expandedSource: expected, macros: testMacros)
@@ -135,27 +142,17 @@ final class SealedGeneratorTests: XCTestCase {
     func testSealedMacros_FailCase() {
         let source = """
         @Sealed(typeParseRule: .lowerCase)
-        enum ImageSource {
+        enum ImageSource: Codable {
             case image(Image)
             case lottie(Lottie)
             case icon
         }
         """
         let expected = """
-        enum ImageSource {
+        enum ImageSource: Codable {
             case image(Image)
             case lottie(Lottie)
             case icon
-        }
-        private enum ImageSourceTypeCodingKey: String, CodingKey {
-            case type
-        }
-        private enum ImageSourceType: String, CodingKey, Codable {
-            case image = "image"
-            case lottie = "lottie"
-            case icon = "icon"
-        }
-        extension ImageSource: Codable {
         }
         """
         assertMacroExpansion(
